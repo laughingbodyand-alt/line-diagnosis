@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>診断中継ページ</title>
+  <script src="https://static.line-scdn.net/liff/edge/versions/2.22.3/sdk.js"></script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      text-align: center;
+      padding: 50px 20px;
+      background: #f8f9fa;
+    }
+    .spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #00B900;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .error {
+      color: red;
+      padding: 20px;
+      background: #ffe0e0;
+      border-radius: 8px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="spinner"></div>
+  <p>診断ページに移動しています...</p>
+  <p style="font-size:12px; color:#999;">しばらくお待ちください</p>
+  <div id="error-message"></div>
+  
+  <script>
+    // ⚠️ ここを変更してください
+    const LIFF_ID = 'あなたのLIFF_ID';  // 例: 1234567890-abcdefgh
+    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/xxxxx/exec';  // Apps ScriptのURL
+    
+    function showError(message) {
+      document.getElementById('error-message').innerHTML = '<div class="error">' + message + '</div>';
+      document.querySelector('.spinner').style.display = 'none';
+    }
+    
+    // 設定チェック
+    if (LIFF_ID === 'あなたのLIFF_ID') {
+      showError('❌ LIFF IDが設定されていません');
+    } else if (APPS_SCRIPT_URL === 'https://script.google.com/macros/s/xxxxx/exec') {
+      showError('❌ Apps Script URLが設定されていません');
+    } else {
+      // LIFF初期化
+      liff.init({ liffId: LIFF_ID })
+        .then(() => {
+          if (!liff.isLoggedIn()) {
+            liff.login();
+            return;
+          }
+          
+          return liff.getProfile();
+        })
+        .then(profile => {
+          if (profile) {
+            const userId = profile.userId;
+            console.log('ユーザーID取得:', userId);
+            
+            // Apps ScriptにユーザーIDを渡してリダイレクト
+            window.location.href = APPS_SCRIPT_URL + '?uid=' + encodeURIComponent(userId);
+          }
+        })
+        .catch(err => {
+          console.error('エラー:', err);
+          showError('❌ エラーが発生しました<br>' + err.message);
+        });
+    }
+  </script>
+</body>
+</html>
