@@ -41,45 +41,35 @@
   <div id="error-message"></div>
   
   <script>
-    // ⚠️ ここを変更してください
-    const LIFF_ID = '2008733321-K8A59q02';  // 例: 1234567890-abcdefgh
-    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyKrp2NP60HH0TQ4tg0JZc_HxmDXQOUV8qCahOTG0zx0J9za8SNrl2rIAeePotO0Qo/exec';  // Apps ScriptのURL
+    const LIFF_ID = '2008733321-K8A59q02';
+    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyKrp2NP60HH0TQ4tg0JZc_HxmDXQOUV8qCahOTG0zx0J9za8SNrl2rIAeePotO0Qo/exec';
     
     function showError(message) {
       document.getElementById('error-message').innerHTML = '<div class="error">' + message + '</div>';
       document.querySelector('.spinner').style.display = 'none';
     }
     
-    // 設定チェック
-    if (LIFF_ID === '2008733321-K8A59q02') {
-      showError('❌ LIFF IDが設定されていません');
-    } else if (APPS_SCRIPT_URL === 'https://script.google.com/macros/s/AKfycbyKrp2NP60HH0TQ4tg0JZc_HxmDXQOUV8qCahOTG0zx0J9za8SNrl2rIAeePotO0Qo/exec') {
-      showError('❌ Apps Script URLが設定されていません');
-    } else {
-      // LIFF初期化
-      liff.init({ liffId: LIFF_ID })
-        .then(() => {
-          if (!liff.isLoggedIn()) {
-            liff.login();
-            return;
-          }
+    liff.init({ liffId: LIFF_ID })
+      .then(() => {
+        if (!liff.isLoggedIn()) {
+          liff.login();
+          return;
+        }
+        
+        return liff.getProfile();
+      })
+      .then(profile => {
+        if (profile) {
+          const userId = profile.userId;
+          console.log('ユーザーID取得:', userId);
           
-          return liff.getProfile();
-        })
-        .then(profile => {
-          if (profile) {
-            const userId = profile.userId;
-            console.log('ユーザーID取得:', userId);
-            
-            // Apps ScriptにユーザーIDを渡してリダイレクト
-            window.location.href = APPS_SCRIPT_URL + '?uid=' + encodeURIComponent(userId);
-          }
-        })
-        .catch(err => {
-          console.error('エラー:', err);
-          showError('❌ エラーが発生しました<br>' + err.message);
-        });
-    }
+          window.location.href = APPS_SCRIPT_URL + '?uid=' + encodeURIComponent(userId);
+        }
+      })
+      .catch(err => {
+        console.error('エラー:', err);
+        showError('❌ エラーが発生しました<br>' + err.message);
+      });
   </script>
 </body>
 </html>
